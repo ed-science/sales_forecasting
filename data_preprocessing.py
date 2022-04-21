@@ -69,7 +69,7 @@ def generate_supervised(data):
 
     #create column for each lag
     for i in range(1, 13):
-        col_name = 'lag_' + str(i)
+        col_name = f'lag_{str(i)}'
         supervised_df[col_name] = supervised_df['sales_diff'].shift(i)
 
     #drop null values
