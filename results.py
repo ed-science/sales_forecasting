@@ -47,7 +47,7 @@ def plot_results(results_df):
            title="Model Error Comparison")
     sns.despine()
 
-    plt.savefig(f'../model_output/compare_models.png')
+    plt.savefig('../model_output/compare_models.png')
 
 def main():
     """Calls functions to compare modelling results"""

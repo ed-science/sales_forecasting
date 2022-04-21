@@ -45,7 +45,7 @@ def tts(data):
     months of data.
     """
     data = data.drop(['sales', 'date'], axis=1)
-    train, test = data[0:-12].values, data[-12:].values
+    train, test = data[:-12].values, data[-12:].values
 
     return train, test
 
@@ -94,20 +94,17 @@ def undo_scaling(y_pred, x_test, scaler_obj, lstm=False):
         x_test = x_test.reshape(x_test.shape[0], 1, x_test.shape[1])
 
     #rebuild test set for inverse transform
-    pred_test_set = []
-    for index in range(0, len(y_pred)):
-        pred_test_set.append(np.concatenate([y_pred[index], x_test[index]],
-                                            axis=1))
+    pred_test_set = [
+        np.concatenate([y_pred[index], x_test[index]], axis=1)
+        for index in range(len(y_pred))
+    ]
 
     #reshape pred_test_set
     pred_test_set = np.array(pred_test_set)
     pred_test_set = pred_test_set.reshape(pred_test_set.shape[0],
                                           pred_test_set.shape[2])
 
-    #inverse transform
-    pred_test_set_inverted = scaler_obj.inverse_transform(pred_test_set)
-
-    return pred_test_set_inverted
+    return scaler_obj.inverse_transform(pred_test_set)
 
 def predict_df(unscaled_predictions, original_df):
     """Generates a dataframe that shows the predicted sales for each month
@@ -123,16 +120,17 @@ def predict_df(unscaled_predictions, original_df):
     sales_dates = list(original_df[-13:].date)
     act_sales = list(original_df[-13:].sales)
 
-    for index in range(0, len(unscaled_predictions)):
-        result_dict = {}
-        result_dict['pred_value'] = int(unscaled_predictions[index][0] +
-                                        act_sales[index])
-        result_dict['date'] = sales_dates[index+1]
+    for index in range(len(unscaled_predictions)):
+        result_dict = {
+            'pred_value': int(
+                unscaled_predictions[index][0] + act_sales[index]
+            ),
+            'date': sales_dates[index + 1],
+        }
+
         result_list.append(result_dict)
 
-    df_result = pd.DataFrame(result_list)
-
-    return df_result
+    return pd.DataFrame(result_list)
 
 def get_scores(unscaled_df, original_df, model_name):
     """Prints the root mean squared error, mean absolute error, and r2 scores
